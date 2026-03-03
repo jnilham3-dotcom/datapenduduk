@@ -166,7 +166,7 @@ const PendudukPage: React.FC<PendudukProps> = ({ user }) => {
       status_perkawinan: 'Belum Kawin',
       hubungan_keluarga: 'Kepala Keluarga',
       kewarganegaraan: 'WNI',
-      golongan_darah: 'O',
+      golongan_darah: 'Tidak Tahu',
       dusun: dusunList[0]
     });
     setFormError('');
@@ -187,7 +187,7 @@ const PendudukPage: React.FC<PendudukProps> = ({ user }) => {
       status_perkawinan: 'Kawin',
       hubungan_keluarga: 'Istri',
       kewarganegaraan: 'WNI',
-      golongan_darah: 'O',
+      golongan_darah: 'Tidak Tahu',
     });
     setFormError('');
     setSuccessMessage('');
@@ -564,7 +564,7 @@ const PendudukPage: React.FC<PendudukProps> = ({ user }) => {
                           onChange={(e) => setFormData({...formData, golongan_darah: e.target.value})}
                           className="w-full bg-slate-50 border border-slate-200 px-4 py-2.5 rounded-xl focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none transition-all"
                         >
-                          {['A', 'B', 'AB', 'O', 'A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'].map(g => <option key={g} value={g}>{g}</option>)}
+                          {['Tidak Tahu', 'A', 'B', 'AB', 'O', 'A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'].map(g => <option key={g} value={g}>{g}</option>)}
                         </select>
                       </div>
                     </div>
