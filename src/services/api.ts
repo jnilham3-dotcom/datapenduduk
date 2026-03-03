@@ -40,6 +40,11 @@ const callGAS = async (functionName: string, ...args: any[]): Promise<any> => {
     ];
 
     try {
+      const fetchOptions: RequestInit = {
+        method: postActions.includes(action) ? 'POST' : 'GET',
+        redirect: 'follow',
+      };
+
       if (postActions.includes(action)) {
         // POST requests
         const body: any = { action: normalizedAction };
@@ -48,30 +53,33 @@ const callGAS = async (functionName: string, ...args: any[]): Promise<any> => {
         else if (action.startsWith('Delete')) { body.id = args[0]; }
         else { body.data = args[0]; }
         
-        const res = await fetch(GAS_URL, {
-          method: 'POST',
-          body: JSON.stringify(body)
-        });
-        return await res.json();
-      } else {
+        fetchOptions.body = JSON.stringify(body);
+        // Do NOT set Content-Type to application/json to avoid CORS preflight (OPTIONS)
+        // GAS handles text/plain or no content-type fine for doPost
+      }
+
+      let url = GAS_URL;
+      if (!postActions.includes(action)) {
         // GET requests
-        let url = `${GAS_URL}?action=${normalizedAction}`;
+        url += (url.includes('?') ? '&' : '?') + `action=${normalizedAction}`;
         if (action === 'GetPenduduk') {
           const opt = args[0] || {};
           url += `&search=${opt.search || ''}&dusun=${opt.dusun || ''}&limit=${opt.limit || ''}&offset=${opt.offset || 0}&hubungan_keluarga=${opt.hubungan_keluarga || ''}`;
         }
         if (action === 'GetLembaga') url += `&type=${args[0]}`;
-        
-        const res = await fetch(url);
-        return await res.json();
       }
+      
+      const res = await fetch(url, fetchOptions);
+      if (!res.ok) {
+        throw new Error(`HTTP Error: ${res.status} ${res.statusText}`);
+      }
+      return await res.json();
     } catch (err: any) {
       console.error(`GAS Fetch Error (${functionName}):`, err);
       
-      // If GAS fails, we might want to throw a specific error that allows the UI to suggest switching back
       const errorMsg = err.message === 'Failed to fetch' 
-        ? 'Gagal terhubung ke Google Apps Script. Pastikan Web App sudah di-deploy sebagai "Anyone" dan URL sudah benar.'
-        : `Error GAS: ${err.message}`;
+        ? `Gagal terhubung ke Google Apps Script (${functionName}). Pastikan Web App sudah di-deploy sebagai "Anyone", URL berakhiran /exec, dan tidak ada pemblokir iklan yang mengganggu.`
+        : `Error GAS (${functionName}): ${err.message}`;
       
       throw new Error(errorMsg);
     }
@@ -239,7 +247,7 @@ export const api = {
 
   // Specific helpers
   getPendudukByNIK: async (nik: string) => {
-    if (isGAS || GAS_URL) {
+    if (useGAS()) {
       const { data } = await callGAS('apiGetPenduduk', { search: nik });
       return data.find((p: any) => p.nik == nik) || null;
     }
@@ -248,7 +256,7 @@ export const api = {
   },
 
   getPendudukByKK: async (no_kk: string) => {
-    if (isGAS || GAS_URL) {
+    if (useGAS()) {
       const { data } = await callGAS('apiGetPenduduk', { search: no_kk });
       return data.filter((p: any) => p.no_kk == no_kk);
     }

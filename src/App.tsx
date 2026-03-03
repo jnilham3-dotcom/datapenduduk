@@ -17,6 +17,7 @@ export default function App() {
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState<{ text: string, type: 'success' | 'error' } | null>(null);
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
 
   useEffect(() => {
     if (message) {
@@ -89,19 +90,19 @@ export default function App() {
           onLogout={handleLogout} 
           isMobileOpen={isMobileSidebarOpen}
           setIsMobileOpen={setIsMobileSidebarOpen}
+          isOpen={isSidebarOpen}
+          setIsOpen={setIsSidebarOpen}
         />
         
-        <main className={`flex-1 transition-all duration-300 min-h-screen ${user ? 'ml-20 md:ml-64' : 'ml-0'}`}>
+        <main className={`flex-1 transition-all duration-300 min-h-screen ml-0 ${isSidebarOpen ? 'md:ml-64' : 'md:ml-20'}`}>
           <header className="h-20 bg-white/80 backdrop-blur-md border-b border-slate-100 sticky top-0 z-40 px-4 md:px-8 flex items-center justify-between">
             <div className="flex items-center gap-4">
-              {user && (
-                <button 
-                  onClick={() => setIsMobileSidebarOpen(true)}
-                  className="md:hidden p-2 text-slate-600 hover:bg-slate-100 rounded-lg transition-colors"
-                >
-                  <MenuIcon size={24} />
-                </button>
-              )}
+              <button 
+                onClick={() => setIsMobileSidebarOpen(true)}
+                className="md:hidden p-2 text-slate-600 hover:bg-slate-100 rounded-lg transition-colors"
+              >
+                <MenuIcon size={24} />
+              </button>
               <div className="w-10 h-10 bg-emerald-500 rounded-lg flex items-center justify-center text-white font-bold">D</div>
               <h2 className="text-lg md:text-xl font-bold text-slate-800 truncate max-w-[150px] sm:max-w-none">Sistem Desa Digital</h2>
             </div>
@@ -150,7 +151,8 @@ export default function App() {
 
           <div className="p-4 md:p-8 max-w-7xl mx-auto">
             <Routes>
-              <Route path="/" element={user ? <Dashboard /> : <Navigate to="/login" replace />} />
+              {/* Public Routes */}
+              <Route path="/" element={<Dashboard />} />
               <Route path="/login" element={user ? <Navigate to="/" replace /> : <Login onLogin={handleLogin} />} />
               
               {/* Protected Routes */}

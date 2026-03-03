@@ -44,6 +44,7 @@ const PendudukPage: React.FC<PendudukProps> = ({ user }) => {
   const [familyMembers, setFamilyMembers] = useState<Penduduk[]>([]);
   const [formData, setFormData] = useState<Partial<Penduduk>>({});
   const [formError, setFormError] = useState('');
+  const [fetchError, setFetchError] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
 
   const hasPermission = (permission: string) => {
@@ -62,6 +63,7 @@ const PendudukPage: React.FC<PendudukProps> = ({ user }) => {
 
   const fetchData = async () => {
     setLoading(true);
+    setFetchError('');
     try {
       const offset = page * (limit === 'Semua' ? 0 : parseInt(limit));
       const result = await api.getPenduduk({ 
@@ -73,8 +75,9 @@ const PendudukPage: React.FC<PendudukProps> = ({ user }) => {
       });
       setData(result.data);
       setTotal(result.total);
-    } catch (err) {
+    } catch (err: any) {
       console.error('Error fetching data:', err);
+      setFetchError(err.message || 'Gagal mengambil data dari server');
     } finally {
       setLoading(false);
     }
@@ -86,12 +89,24 @@ const PendudukPage: React.FC<PendudukProps> = ({ user }) => {
     setSuccessMessage('');
 
     // Validation
-    if (!formData.nik || formData.nik.length !== 16) {
-      setFormError('NIK harus 16 digit');
+    if (!formData.nik || !/^\d{16}$/.test(formData.nik)) {
+      setFormError('NIK harus berupa 16 digit angka');
       return;
     }
-    if (!formData.no_kk || formData.no_kk.length !== 16) {
-      setFormError('No. KK harus 16 digit');
+    if (!formData.no_kk || !/^\d{16}$/.test(formData.no_kk)) {
+      setFormError('No. KK harus berupa 16 digit angka');
+      return;
+    }
+    if (!formData.nama_lengkap || formData.nama_lengkap.trim().length < 3) {
+      setFormError('Nama lengkap minimal 3 karakter');
+      return;
+    }
+    if (!formData.tempat_lahir || !formData.tanggal_lahir) {
+      setFormError('Tempat dan tanggal lahir wajib diisi');
+      return;
+    }
+    if (!formData.alamat || formData.alamat.trim().length < 5) {
+      setFormError('Alamat minimal 5 karakter');
       return;
     }
 
@@ -220,6 +235,22 @@ const PendudukPage: React.FC<PendudukProps> = ({ user }) => {
       </div>
 
       {/* Filters & Search */}
+      {fetchError && (
+        <div className="bg-red-50 border border-red-100 p-4 rounded-2xl flex items-center gap-3 text-red-600 animate-pulse">
+          <AlertTriangle size={20} />
+          <div className="flex-1">
+            <p className="text-sm font-bold">Gagal Memuat Data</p>
+            <p className="text-xs opacity-80">{fetchError}</p>
+          </div>
+          <button 
+            onClick={fetchData}
+            className="bg-red-600 text-white px-4 py-1.5 rounded-xl text-xs font-bold hover:bg-red-700 transition-all"
+          >
+            Coba Lagi
+          </button>
+        </div>
+      )}
+
       <div className="bg-white p-6 rounded-3xl shadow-sm border border-slate-100 flex flex-col lg:flex-row gap-4 items-center">
         <div className="relative flex-1 w-full">
           <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400">

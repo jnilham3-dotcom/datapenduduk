@@ -46,18 +46,24 @@ const PerangkatPage: React.FC<PerangkatProps> = ({ user }) => {
   }, []);
 
   const fetchPerangkat = async () => {
+    setLoading(true);
+    setError('');
     try {
       const data = await api.getPerangkat();
       setPerangkat(data);
-    } catch (err) {
+    } catch (err: any) {
       console.error('Error fetching perangkat:', err);
+      setError(err.message || 'Gagal mengambil data dari server');
     } finally {
       setLoading(false);
     }
   };
 
   const handleSearchPenduduk = async () => {
-    if (!searchNIK) return;
+    if (!searchNIK || !/^\d{16}$/.test(searchNIK)) {
+      setError('NIK harus berupa 16 digit angka');
+      return;
+    }
     try {
       const data = await api.getPendudukByNIK(searchNIK);
       if (data) {
@@ -74,7 +80,22 @@ const PerangkatPage: React.FC<PerangkatProps> = ({ user }) => {
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!foundPenduduk || !jabatan) return;
+    if (!foundPenduduk) {
+      setError('Silakan cari data penduduk terlebih dahulu');
+      return;
+    }
+    if (!jabatan || jabatan.trim().length < 2) {
+      setError('Jabatan wajib diisi (minimal 2 karakter)');
+      return;
+    }
+    if (!sk || sk.trim().length < 5) {
+      setError('Nomor SK wajib diisi (minimal 5 karakter)');
+      return;
+    }
+    if (!tglSk) {
+      setError('Tanggal SK wajib diisi');
+      return;
+    }
     setError('');
     setSuccessMessage('');
 
@@ -143,6 +164,22 @@ const PerangkatPage: React.FC<PerangkatProps> = ({ user }) => {
           </button>
         )}
       </div>
+
+      {error && !isModalOpen && !isDetailOpen && !isDeleteOpen && (
+        <div className="bg-red-50 border border-red-100 p-4 rounded-2xl flex items-center gap-3 text-red-600 animate-pulse">
+          <AlertCircle size={20} />
+          <div className="flex-1">
+            <p className="text-sm font-bold">Gagal Memuat Data</p>
+            <p className="text-xs opacity-80">{error}</p>
+          </div>
+          <button 
+            onClick={fetchPerangkat}
+            className="bg-red-600 text-white px-4 py-1.5 rounded-xl text-xs font-bold hover:bg-red-700 transition-all"
+          >
+            Coba Lagi
+          </button>
+        </div>
+      )}
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {loading ? (

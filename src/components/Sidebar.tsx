@@ -24,10 +24,11 @@ interface SidebarProps {
   onLogout: () => void;
   isMobileOpen: boolean;
   setIsMobileOpen: (open: boolean) => void;
+  isOpen: boolean;
+  setIsOpen: (open: boolean) => void;
 }
 
-const Sidebar: React.FC<SidebarProps> = ({ user, onLogout, isMobileOpen, setIsMobileOpen }) => {
-  const [isOpen, setIsOpen] = useState(true);
+const Sidebar: React.FC<SidebarProps> = ({ user, onLogout, isMobileOpen, setIsMobileOpen, isOpen, setIsOpen }) => {
   const location = useLocation();
   const [isLembagaOpen, setIsLembagaOpen] = useState(location.pathname.startsWith('/lembaga'));
   const navigate = useNavigate();
@@ -99,14 +100,13 @@ const Sidebar: React.FC<SidebarProps> = ({ user, onLogout, isMobileOpen, setIsMo
         fixed left-0 top-0 h-full bg-primary text-white transition-all duration-300 z-[60] flex flex-col
         ${isOpen ? 'w-64' : 'w-20'}
         ${isMobileOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}
-        ${!user && 'hidden'}
       `}>
         <div className="flex items-center justify-between p-4 border-b border-white/10 h-20 shrink-0">
           <div className={`flex items-center gap-3 ${!isOpen && 'hidden'}`}>
             <div className="w-10 h-10 bg-accent rounded-xl flex items-center justify-center font-bold text-xl shadow-lg shadow-accent/20">D</div>
             <div className="flex flex-col">
-              <span className="font-bold text-lg tracking-tight leading-none">Sistem Desa</span>
-              <span className="text-[10px] text-slate-400 uppercase tracking-widest mt-1">Digitalization</span>
+              <span className="font-bold text-lg tracking-tight leading-none">Sidapen Desa</span>
+              <span className="text-[10px] text-slate-400 uppercase tracking-widest mt-1">Purwarahayu</span>
             </div>
           </div>
           <button onClick={() => setIsOpen(!isOpen)} className="p-2 hover:bg-white/10 rounded-lg transition-colors text-slate-400 hover:text-white hidden md:block">
@@ -119,7 +119,7 @@ const Sidebar: React.FC<SidebarProps> = ({ user, onLogout, isMobileOpen, setIsMo
 
       {/* User Profile Section */}
       <div className={`p-4 border-b border-white/10 shrink-0 ${!isOpen && 'flex justify-center'}`}>
-        {user && (
+        {user ? (
           isOpen ? (
             <div className="bg-white/5 p-4 rounded-2xl border border-white/10">
               <div className="flex items-center gap-3">
@@ -150,6 +150,22 @@ const Sidebar: React.FC<SidebarProps> = ({ user, onLogout, isMobileOpen, setIsMo
                 user.nama_lengkap?.charAt(0) || 'U'
               )}
             </div>
+          )
+        ) : (
+          isOpen ? (
+            <Link to="/login" className="bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 p-4 rounded-2xl flex items-center gap-3 hover:bg-emerald-500/20 transition-all group">
+              <div className="w-10 h-10 bg-emerald-500 rounded-xl flex items-center justify-center text-white shadow-lg shadow-emerald-500/20">
+                <LogIn size={20} />
+              </div>
+              <div className="flex flex-col">
+                <span className="font-bold text-sm">Masuk Sistem</span>
+                <span className="text-[10px] text-emerald-500/60 uppercase font-bold">Login Required</span>
+              </div>
+            </Link>
+          ) : (
+            <Link to="/login" className="w-10 h-10 bg-emerald-500 rounded-xl flex items-center justify-center text-white shadow-lg shadow-emerald-500/20 hover:scale-110 transition-all">
+              <LogIn size={20} />
+            </Link>
           )
         )}
       </div>

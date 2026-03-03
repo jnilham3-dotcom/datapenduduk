@@ -7,7 +7,8 @@ import {
   MapPin,
   TrendingUp,
   PieChart as PieChartIcon,
-  BarChart as BarChartIcon
+  BarChart as BarChartIcon,
+  AlertTriangle
 } from 'lucide-react';
 import { 
   BarChart, 
@@ -24,6 +25,7 @@ import {
 } from 'recharts';
 import { DashboardStats } from '../types';
 import { api } from '../services/api';
+import { motion } from 'motion/react';
 
 const COLORS = ['#10b981', '#3b82f6', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899'];
 
@@ -60,34 +62,52 @@ const Dashboard: React.FC = () => {
 
   if (error || !stats) {
     return (
-      <div className="flex flex-col items-center justify-center h-full gap-4">
-        <div className="bg-red-50 p-8 rounded-3xl border border-red-100 flex flex-col items-center gap-4 max-w-md text-center">
-          <div className="w-16 h-16 bg-red-100 text-red-500 rounded-full flex items-center justify-center">
-            <TrendingUp size={32} className="rotate-180" />
+      <div className="flex flex-col items-center justify-center h-full min-h-[60vh] p-4">
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="bg-white p-10 rounded-[2.5rem] shadow-2xl shadow-slate-200/50 border border-slate-100 flex flex-col items-center gap-6 max-w-lg text-center relative overflow-hidden"
+        >
+          <div className="absolute top-0 left-0 w-full h-2 bg-red-500" />
+          <div className="w-20 h-20 bg-red-50 text-red-500 rounded-3xl flex items-center justify-center shadow-inner">
+            <AlertTriangle size={40} />
           </div>
-          <h2 className="text-xl font-bold text-slate-900">Gagal Memuat Data</h2>
-          <p className="text-slate-500">{error || 'Terjadi kesalahan saat mengambil data dari server.'}</p>
-          <div className="flex gap-3">
+          
+          <div className="space-y-2">
+            <h2 className="text-2xl font-black text-slate-900 tracking-tight">Koneksi Terputus</h2>
+            <p className="text-slate-500 leading-relaxed">
+              {error?.includes('Google Apps Script') 
+                ? 'Sistem tidak dapat terhubung ke database Google Sheets. Pastikan URL Web App sudah benar dan script sudah dideploy.'
+                : 'Terjadi kesalahan saat mengambil data statistik dari server. Silakan periksa koneksi internet Anda.'}
+            </p>
+          </div>
+
+          <div className="flex flex-col sm:flex-row gap-3 w-full">
             <button 
               onClick={fetchStats}
-              className="mt-2 bg-slate-900 text-white px-6 py-2.5 rounded-xl font-bold hover:bg-slate-800 transition-all"
+              className="flex-1 bg-slate-900 text-white px-8 py-4 rounded-2xl font-bold hover:bg-slate-800 transition-all active:scale-95 flex items-center justify-center gap-2"
             >
-              Coba Lagi
+              <TrendingUp size={20} className="rotate-0" />
+              <span>Coba Muat Ulang</span>
             </button>
+            
             {error?.includes('Google Apps Script') && (
               <button 
                 onClick={() => {
-                  // This is a temporary override for the session
                   (window as any).FORCE_LOCAL_BACKEND = true;
                   fetchStats();
                 }}
-                className="mt-2 bg-white text-slate-900 border border-slate-200 px-6 py-2.5 rounded-xl font-bold hover:bg-slate-50 transition-all"
+                className="flex-1 bg-white text-slate-900 border-2 border-slate-100 px-8 py-4 rounded-2xl font-bold hover:bg-slate-50 hover:border-slate-200 transition-all active:scale-95"
               >
-                Gunakan Server Lokal
+                Mode Lokal
               </button>
             )}
           </div>
-        </div>
+
+          <div className="pt-4 border-t border-slate-50 w-full">
+            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em]">Error Code: {error?.split(':')[0] || 'UNKNOWN_ERR'}</p>
+          </div>
+        </motion.div>
       </div>
     );
   }
