@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <script>
+      /**
+       * Extreme fix for "Cannot set property fetch of #<Window> which has only a getter"
+       * This error occurs when a library tries to polyfill fetch by assignment (window.fetch = ...)
+       * but the environment has defined fetch as a non-writable getter-only property.
+       */
+      (function() {
+        // Define global and globalThis if they don't exist
+        if (typeof global === 'undefined') window.global = window;
+        if (typeof globalThis === 'undefined') window.globalThis = window;
+
+        var originalFetch = window.fetch;
+
+        function protect(obj, prop) {
+          if (!obj) return;
+          try {
+            var original = obj[prop];
+            Object.defineProperty(obj, prop, {
+              get: function() { return original; },
+              set: function(v) { 
+                console.warn("Attempted to overwrite " + prop + ", ignored.");
+              },
+              configurable: true,
+              enumerable: true
+            });
+          } catch (e) {
+            // If it's already a getter and not configurable, we can't do anything
+            // but at least we tried to catch it.
+          }
+        }
+
+        // Protect fetch on all possible global objects
+        protect(window, 'fetch');
+        if (window.global && window.global !== window) protect(window.global, 'fetch');
+        if (window.globalThis && window.globalThis !== window) protect(window.globalThis, 'fetch');
+      })();
+    </script>
+    <meta charset="UTF-8" />
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
+
