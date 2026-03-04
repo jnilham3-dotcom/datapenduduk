@@ -265,7 +265,7 @@ const Sidebar: React.FC<SidebarProps> = ({ user, onLogout, isMobileOpen, setIsMo
                 {useGAS() ? 'Google Apps Script' : 'Local Server'}
               </span>
               <span className="text-[9px] text-slate-400 truncate">
-                {useGAS() ? (isValidGasUrl ? 'Connected via Web App' : 'GAS Environment') : 'Express Backend'}
+                {useGAS() ? (isValidGasUrl ? 'Copyright by : Ilham Cahya Nugraha' : 'GAS Environment') : 'Express Backend'}
               </span>
             </div>
           </div>
